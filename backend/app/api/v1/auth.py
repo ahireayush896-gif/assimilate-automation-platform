@@ -265,7 +265,11 @@ def activate_account(
     """
     Validates the one-time activation token and establishes the employee's secure password.
     """
-    token_hash = hashlib.sha256(payload.token.encode()).hexdigest()
+    raw_token = payload.token.strip()
+    if "token=" in raw_token:
+        raw_token = raw_token.split("token=")[-1]
+
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
     invitation = db.query(Invitation).filter(
         Invitation.token_hash == token_hash,
         Invitation.status == "PENDING"

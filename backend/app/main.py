@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.auth import router as auth_router
@@ -27,6 +28,12 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    """Redirect root path to interactive Swagger documentation."""
+    return RedirectResponse(url=f"{settings.API_V1_STR}/docs")
 
 
 @app.get("/health", tags=["Health"])
