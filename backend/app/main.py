@@ -4,6 +4,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.auth import router as auth_router
+from app.api.v1.repos import router as repos_router
+from app.api.v1.tickets import router as tickets_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +33,7 @@ if settings.BACKEND_CORS_ORIGINS:
 
 
 @app.get("/", include_in_schema=False)
+@app.get("/docs", include_in_schema=False)
 def root():
     """Redirect root path to interactive Swagger documentation."""
     return RedirectResponse(url=f"{settings.API_V1_STR}/docs")
@@ -49,6 +52,8 @@ def health_check():
 
 # Include API v1 Routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(repos_router, prefix=settings.API_V1_STR)
+app.include_router(tickets_router, prefix=settings.API_V1_STR)
 
 
 if __name__ == "__main__":
