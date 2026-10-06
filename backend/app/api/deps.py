@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
-from app.db.session import get_master_db
+from app.db.session import get_master_db, get_tenant_session
 from app.models.auth import User
 
 security = HTTPBearer()
@@ -49,3 +49,19 @@ def require_role(allowed_roles: List[str]) -> Callable:
         return current_user
 
     return role_checker
+
+
+def get_current_tenant_db(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Dependency that provides an active SQLAlchemy Session connected to the
+    authenticated employee's private tenant database (e.g. tenant_<slug>_db).
+    """
+    db_name = current_user.tenant.db_name
+    session = get_tenant_session(db_name)
+    try:
+        yield session
+    finally:
+        session.close()
+
